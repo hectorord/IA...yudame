@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>IA...yudame · Taller</title>
+<title>IA...yudame · Arma al agente</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -89,11 +89,7 @@ textarea,select{width:100%;font:16px/1.45 Inter,sans-serif;color:var(--ink);back
 </head>
 <body>
 <header class="top">
-  <div class="brand">IA<span>...</span>yudame · Taller</div>
-  <nav class="tabs" aria-label="Partes del taller">
-    <a href="#armar" id="t-armar">1 · Arma al agente</a>
-    <a href="#disena" id="t-disena">2 · Diseña tu agente</a>
-  </nav>
+  <div class="brand">IA<span>...</span>yudame · Arma al agente</div>
 </header>
 <main>
 <section class="view" id="v-armar">
@@ -121,7 +117,7 @@ textarea,select{width:100%;font:16px/1.45 Inter,sans-serif;color:var(--ink);back
       <div class="win" id="win" hidden>
         <h2>¡Agente armado!</h2>
         <p id="winTxt"></p>
-        <div class="row"><button class="btn" id="again">Jugar otra vez</button><a class="btn alt" href="#disena" style="text-decoration:none;display:flex;align-items:center">Diseña el tuyo →</a></div>
+        <div class="row"><button class="btn" id="again">Jugar otra vez</button></div>
       </div>
     </div>
     <div class="tray">
@@ -132,24 +128,6 @@ textarea,select{width:100%;font:16px/1.45 Inter,sans-serif;color:var(--ink);back
   </div>
 </section>
 
-<section class="view" id="v-disena" hidden>
-  <div class="build">
-    <div>
-      <h2>Diseña tu agente</h2>
-      <p style="margin:6px 0 0;color:var(--mut)">Elige una tarea repetitiva de tu trabajo y llena cada pieza. Empieza con un ejemplo o en blanco.</p>
-      <div class="presets" id="presets"></div>
-      <form id="form" autocomplete="off"></form>
-    </div>
-    <aside class="out" aria-labelledby="outT">
-      <h3 id="outT">Tu agente, listo para copiar</h3>
-      <p>Pégalo en el asistente que ya uses (ChatGPT, Claude, Gemini, Copilot) y adjunta tus archivos.</p>
-      <pre id="prompt"></pre>
-      <button class="btn" id="copy" type="button">Copiar instrucciones</button>
-      <span id="copied" aria-live="polite" style="margin-left:10px"></span>
-    </aside>
-  </div>
-  <p class="note">Nada de lo que escribas aquí se envía a ningún lado: se queda en tu navegador.</p>
-</section>
 </main>
 
 <script>
@@ -166,17 +144,17 @@ const ICON={
 const svg=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k]||ICON.x}</svg>`;
 const PIEZAS=[
  {id:'modelo',t:'Modelo (el cerebro)',ok:1,m:'¡Sí! El modelo (ChatGPT, Claude, Gemini…) es el cerebro: entiende, razona y decide el siguiente paso.'},
- {id:'objetivo',t:'Objetivo',ok:1,m:'¡Sí! Sin una meta clara el agente no sabe qué hacer ni cuándo terminó.'},
+ {id:'objetivo',t:'Objetivo',ok:1,m:'¡Sí! Sin un objetivo claro el agente no sabe qué hacer ni cuándo terminó.'},
  {id:'instrucciones',t:'Instrucciones y rol',ok:1,m:'¡Sí! Quién es, cómo debe trabajar y en qué formato te entrega el resultado.'},
  {id:'contexto',t:'Contexto (tu información)',ok:1,m:'¡Sí! Tus documentos, datos y ejemplos. Sin contexto, el agente adivina.'},
  {id:'herramientas',t:'Herramientas',ok:1,m:'¡Sí! Sus manos: buscar, leer archivos, usar tus apps. Es lo que le permite actuar, no solo platicar.'},
  {id:'memoria',t:'Memoria',ok:1,m:'¡Sí! Recuerda lo que ya hizo en la tarea y lo que aprendió de ti.'},
  {id:'reglas',t:'Reglas y límites',ok:1,m:'¡Sí! Lo que NO debe hacer y cuándo debe pedirte permiso. Tú sigues al mando.'},
- {id:'programar',t:'Saber programar',ok:0,m:'¡Intruso! Hoy puedes armar un agente escribiendo en español, sin código.'},
- {id:'cuerpo',t:'Un cuerpo de robot',ok:0,m:'¡Intruso! Un agente es software: vive en tu navegador o en la nube. Este robot es solo un dibujo 😉'},
- {id:'banco',t:'Tu contraseña del banco',ok:0,m:'¡Intruso! Nunca compartas contraseñas. Dale solo los permisos mínimos que necesita.'},
- {id:'super',t:'Una computadora de la NASA',ok:0,m:'¡Intruso! El modelo corre en la nube; te basta un navegador o tu celular.'},
- {id:'mente',t:'Leer tu mente',ok:0,m:'¡Intruso! Si no le das contexto e instrucciones, no lo sabe.'}];
+ {id:'mente',t:'Leer tu mente',ok:0,m:'¡Intruso! Si no le das contexto e instrucciones, no lo sabe.'},
+ {id:'cuerpo',t:'Un cuerpo de robot',ok:0,m:'¡Intruso! Un agente es software: vive en la nube. Este robot es solo un dibujo 😉'},
+ {id:'potente',t:'Una computadora potente',ok:0,m:'¡Intruso! Te basta tu celular, tablet o laptop: el trabajo pesado ocurre en la nube.'},
+ {id:'correo',t:'La contraseña de tu correo',ok:0,m:'¡Intruso! Se conecta con permisos que tú autorizas (como “Iniciar sesión con Google”), nunca con tu contraseña.'},
+ {id:'entrenar',t:'Entrenar tu propia IA',ok:0,m:'¡Intruso! Usas un modelo que ya existe y le das tu contexto. No hace falta entrenar nada.'}];
 const $=s=>document.querySelector(s);
 const tilesEl=$('#tiles'),robotBtn=$('#robotBtn'),robot=$('#robot'),msg=$('#msg');
 let placed=new Set(),errs=0,start=null,timer=null,selected=null;
@@ -204,7 +182,7 @@ function drop(id){
   if(p.ok){placed.add(id);document.getElementById('p-'+id).classList.add('on');robot.classList.add('pop');$('#cnt').textContent=placed.size+'/7'}
   else{errs++;robot.classList.add('shake');$('#err').textContent=errs}
   if(placed.size===7){clearInterval(timer);tick();const s=Math.round((Date.now()-start)/1000);
-    $('#winTxt').textContent=`Lo armaste en ${fmt(s)} y te cayeron ${errs} de 5 intrusos. Modelo + objetivo + instrucciones + contexto + herramientas + memoria + reglas = agente.`;
+    $('#winTxt').textContent=`Lo armaste en ${fmt(s)} y te cayeron ${errs} de 5 intrusos. Modelo + objetivo + instrucciones + contexto + herramientas + memoria + reglas = agente. Espera la siguiente parte del taller.`;
     setTimeout(()=>{$('#win').hidden=false;$('#again').focus()},700)}
 }
 // pointer drag + tap-to-select
@@ -231,57 +209,7 @@ tilesEl.addEventListener('keydown',e=>{const t=e.target.closest('.tile');if(t&&(
 robotBtn.addEventListener('click',()=>{if(selected)drop(selected);else{msg.className='msg';msg.textContent='Primero elige una pieza de la lista.'}});
 $('#again').addEventListener('click',reset);
 
-// builder
-const CAMPOS=[
- ['modelo','Modelo (el cerebro)','¿Qué asistente usarás? El que ya tengas sirve.'],
- ['objetivo','Objetivo','¿Qué tarea concreta debe terminar? ¿Cómo sabes que terminó?'],
- ['instrucciones','Instrucciones y rol','¿Quién es? ¿Cómo trabaja? ¿En qué formato te entrega?'],
- ['contexto','Contexto (tu información)','¿Qué documentos, datos o ejemplos le darás?'],
- ['herramientas','Herramientas','¿Qué puede usar? Buscar en web, leer archivos, hoja de cálculo, tus apps…'],
- ['memoria','Memoria','¿Qué debe recordar entre pasos o entre una vez y otra?'],
- ['reglas','Reglas y límites','¿Qué NO debe hacer? ¿Cuándo debe preguntarte antes?']];
-const EJ={
- 'Contabilidad':{modelo:'El asistente que uso en el trabajo',objetivo:'Conciliar los movimientos del estado de cuenta del mes con las facturas (CFDI) y listar lo que no cuadra.',instrucciones:'Actúa como auxiliar contable. Entrega una tabla con fecha, monto, factura relacionada y estado: cuadra / no cuadra / falta factura.',contexto:'Estado de cuenta en CSV, facturas del mes en XML o PDF y el catálogo de cuentas.',herramientas:'Leer los archivos adjuntos, hoja de cálculo y calculadora.',memoria:'Proveedores frecuentes y cómo se clasificaron el mes pasado.',reglas:'No inventes montos. Si algo no cuadra, márcalo, no lo corrijas. Nada se registra ni se envía sin mi revisión.'},
- 'Hardware':{modelo:'El asistente que uso en el trabajo',objetivo:'Revisar la lista de materiales (BOM) y señalar componentes obsoletos, sin inventario o sin segunda fuente.',instrucciones:'Actúa como ingeniero de componentes. Entrega una tabla por número de parte con riesgo alto/medio/bajo y una alternativa sugerida.',contexto:'BOM en Excel, hojas de datos y la lista de proveedores aprobados.',herramientas:'Búsqueda web en distribuidores y lectura de hojas de datos en PDF.',memoria:'Partes que ya aprobamos o rechazamos antes.',reglas:'Solo alternativas compatibles pin a pin y con la hoja de datos citada. El cambio final lo aprueba un ingeniero.'},
- 'Marketing':{modelo:'El asistente que uso en el trabajo',objetivo:'Preparar el calendario de publicaciones del próximo mes para redes sociales.',instrucciones:'Actúa como estratega de contenido. Entrega una tabla: fecha, red social, idea, texto y llamado a la acción.',contexto:'Guía de marca, productos del mes, fechas clave de la temporada y resultados del mes pasado.',herramientas:'Búsqueda web de tendencias, hoja de cálculo y generador de imágenes.',memoria:'El tono de la marca y las publicaciones que mejor funcionaron.',reglas:'Nada de precios ni promociones sin aprobación. No publiques nada: todo pasa por mi revisión.'},
- 'Firmware':{modelo:'El agente de código que usa mi equipo',objetivo:'Cuando un build falla las pruebas, encontrar qué cambio del PR es el sospechoso más probable.',instrucciones:'Actúa como ingeniero de integración. Entrega: prueba que falla, commits o archivos relacionados, nivel de confianza y por qué.',contexto:'El diff del PR, los logs de las pruebas y el historial de builds anteriores.',herramientas:'Leer el repositorio (git), descargar logs del CI y correr scripts de análisis.',memoria:'Pruebas inestables conocidas y fallas pasadas con su causa.',reglas:'Solo lectura: no hace merge ni revierte nada. Si la confianza es baja, lo dice. Un humano confirma.'},
- 'En blanco':{}};
-const form=$('#form');
-form.innerHTML=CAMPOS.map(([k,t,h])=>`<div class="field"><label for="f-${k}">${svg(k)}${t}</label><small>${h}</small><textarea id="f-${k}" rows="2"></textarea></div>`).join('');
-$('#presets').innerHTML=Object.keys(EJ).map(n=>`<button type="button" aria-pressed="false" data-n="${n}">${n}</button>`).join('');
-const val=k=>$('#f-'+k).value.trim();
-function render(){
-  const L=[];
-  L.push('Quiero que trabajes como mi agente para esta tarea.');
-  if(val('instrucciones'))L.push('\nROL E INSTRUCCIONES\n'+val('instrucciones'));
-  if(val('objetivo'))L.push('\nOBJETIVO\n'+val('objetivo'));
-  if(val('contexto'))L.push('\nCONTEXTO\n'+val('contexto')+'\n(Te comparto esta información en archivos adjuntos o abajo.)');
-  if(val('herramientas'))L.push('\nHERRAMIENTAS QUE PUEDES USAR\n'+val('herramientas'));
-  if(val('memoria'))L.push('\nRECUERDA\n'+val('memoria'));
-  if(val('reglas'))L.push('\nREGLAS Y LÍMITES\n'+val('reglas'));
-  L.push('\nCÓMO TRABAJAR\n1. Antes de empezar, dime tu plan en 3 a 5 pasos.\n2. Si te falta información, pregúntame en lugar de suponer.\n3. Al terminar, dime qué tan seguro estás y qué debo revisar yo.');
-  $('#prompt').textContent=L.join('\n');
-  try{localStorage.setItem('iayudame',JSON.stringify(Object.fromEntries(CAMPOS.map(([k])=>[k,val(k)]))))}catch(e){}
-}
-function fill(o){CAMPOS.forEach(([k])=>$('#f-'+k).value=o[k]||'');render()}
-$('#presets').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
-  document.querySelectorAll('#presets button').forEach(x=>x.setAttribute('aria-pressed',x===b));fill(EJ[b.dataset.n])});
-form.addEventListener('input',render);
-form.addEventListener('submit',e=>e.preventDefault());
-$('#copy').addEventListener('click',async()=>{
-  const txt=$('#prompt').textContent;
-  try{await navigator.clipboard.writeText(txt);$('#copied').textContent='¡Copiado!'}
-  catch(e){const r=document.createRange();r.selectNodeContents($('#prompt'));const s=getSelection();s.removeAllRanges();s.addRange(r);$('#copied').textContent='Texto seleccionado: cópialo con tu teclado o menú.'}
-  setTimeout(()=>$('#copied').textContent='',4000)});
-let saved=null;try{saved=JSON.parse(localStorage.getItem('iayudame')||'null')}catch(e){}
-if(saved&&Object.values(saved).some(Boolean))fill(saved);else{document.querySelector('#presets [data-n="Contabilidad"]').setAttribute('aria-pressed','true');fill(EJ['Contabilidad'])}
-
-// routing
-function route(){const v=location.hash==='#disena'?'disena':'armar';
-  $('#v-armar').hidden=v!=='armar';$('#v-disena').hidden=v!=='disena';
-  $('#t-armar').toggleAttribute('aria-current',v==='armar');$('#t-disena').toggleAttribute('aria-current',v==='disena');
-  if(v==='armar')$('#t-armar').setAttribute('aria-current','page');else $('#t-disena').setAttribute('aria-current','page')}
-addEventListener('hashchange',route);route();reset();
+reset();
 }
 </script>
 </body>
