@@ -151,9 +151,9 @@ const PIEZAS=[
  {id:'memoria',t:'Memoria',ok:1,m:'¡Sí! Recuerda lo que ya hizo en la tarea y lo que aprendió de ti.'},
  {id:'reglas',t:'Reglas y límites',ok:1,m:'¡Sí! Lo que NO debe hacer y cuándo debe pedirte permiso. Tú sigues al mando.'},
  {id:'mente',t:'Leer tu mente',ok:0,m:'¡Intruso! Si no le das contexto e instrucciones, no lo sabe.'},
- {id:'cuerpo',t:'Un cuerpo de robot',ok:0,m:'¡Intruso! Un agente es software: vive en la nube. Este robot es solo un dibujo 😉'},
+ {id:'errores',t:'Cero errores garantizados',ok:0,m:'¡Intruso! Un agente se puede equivocar. Por eso le pones reglas y tú revisas lo que entrega.'},
  {id:'potente',t:'Una computadora potente',ok:0,m:'¡Intruso! Te basta tu celular, tablet o laptop: el trabajo pesado ocurre en la nube.'},
- {id:'correo',t:'La contraseña de tu correo',ok:0,m:'¡Intruso! Se conecta con permisos que tú autorizas (como “Iniciar sesión con Google”), nunca con tu contraseña.'},
+ {id:'correo',t:'La contraseña de tu correo',ok:0,m:'¡Intruso! Sí necesita acceso, pero con una llave propia (token) que tú limitas y puedes revocar. Tu contraseña, nunca.'},
  {id:'entrenar',t:'Entrenar tu propia IA',ok:0,m:'¡Intruso! Usas un modelo que ya existe y le das tu contexto. No hace falta entrenar nada.'}];
 const $=s=>document.querySelector(s);
 const tilesEl=$('#tiles'),robotBtn=$('#robotBtn'),robot=$('#robot'),msg=$('#msg');
