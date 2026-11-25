@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IA...yudame · Taller</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: playful workshop, a fair booth game for strangers in a room
+   IDEA: a robot kit on a workbench: parts in trays, the robot lights up as you build it
+   PICTURE: the robot itself, large, each socket glowing when its part arrives
+   COLOUR and TYPE: paper ground, deep pine, tomato robot, mint lights; Sora + Inter
+   LAYOUT: robot first, parts tray under it (phone) or beside it (projector) */
+:root{color-scheme:light dark;
+--bg:light-dark(#F4F0E8,#0F2420);--card:light-dark(#FFFDF8,#163530);--ink:light-dark(#14201D,#EEF3EF);
+--mut:light-dark(#5B6662,#A9BDB6);--line:light-dark(#DDD5C6,#2A4A43);
+--tom:#FF5A36;--tomd:light-dark(#C43A1C,#FF7B5C);--mint:#7FD8BE;--mintd:light-dark(#1E7A62,#7FD8BE);--pine:#102B26;--off:light-dark(#D6CFC1,#2B4A44)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Inter,system-ui,sans-serif;overflow-x:clip;-webkit-tap-highlight-color:transparent}
+h1,h2,h3{font-family:Sora,Inter,sans-serif;line-height:1.08;margin:0}
+button{font:inherit;color:inherit}
+.top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:14px max(4vw,14px);border-bottom:1px solid var(--line)}
+.brand{font:800 22px Sora,sans-serif}.brand span{color:var(--tomd)}
+.tabs{display:flex;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px}
+.tabs a{text-decoration:none;color:var(--mut);font-weight:600;padding:10px 16px;border-radius:999px;min-height:44px;display:flex;align-items:center}
+.tabs a[aria-current=page]{background:var(--pine);color:#EEF3EF}
+:root[data-theme=dark] .tabs a[aria-current=page]{background:var(--mint);color:var(--pine)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .tabs a[aria-current=page]{background:var(--mint);color:var(--pine)}}
+main{max-width:1240px;margin:0 auto;padding:clamp(16px,3vw,40px) max(4vw,14px)}
+.view[hidden]{display:none}
+.game{display:grid;grid-template-columns:minmax(0,1fr);gap:20px}
+@media(min-width:900px){.game{grid-template-columns:minmax(0,5fr) minmax(0,6fr);align-items:start}}
+.bench{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:18px;position:relative}
+.stats{display:flex;justify-content:space-between;gap:10px;font-weight:600;font-variant-numeric:tabular-nums}
+.stats b{font:800 24px Sora,sans-serif}
+#robotBtn{display:block;width:100%;background:none;border:2px dashed transparent;border-radius:20px;padding:6px;cursor:pointer}
+#robotBtn.armed{border-color:var(--tom)}
+#robotBtn.hot{border-color:var(--mintd);background:color-mix(in srgb,var(--mint) 14%,transparent)}
+#robot{width:100%;max-height:46vh;display:block}
+.part{fill:var(--off);transition:fill .4s}
+.on .part{fill:var(--tom)}
+.glow{fill:var(--off);transition:fill .4s}
+.on .glow{fill:var(--mint)}
+.shake{animation:shake .45s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.pop{animation:pop .5s}
+@keyframes pop{40%{transform:scale(1.06)}}
+.msg{min-height:72px;margin-top:10px;padding:12px 14px;border-radius:14px;background:var(--bg);font-weight:500}
+.msg.ok{background:color-mix(in srgb,var(--mint) 28%,var(--card))}
+.msg.no{background:color-mix(in srgb,var(--tom) 20%,var(--card))}
+.placed{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{font-size:14px;font-weight:600;padding:5px 10px;border-radius:999px;background:var(--pine);color:#EEF3EF}
+.chip.x{background:transparent;border:1px dashed var(--tomd);color:var(--tomd);text-decoration:line-through}
+.tray h2{font-size:26px;margin-bottom:4px}.tray p{margin:0 0 14px;color:var(--mut)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.tile{display:flex;gap:10px;align-items:center;text-align:left;min-height:64px;padding:12px 14px;border-radius:16px;border:1px solid var(--line);background:var(--card);font-weight:600;cursor:grab;touch-action:none;user-select:none;box-shadow:0 2px 0 var(--line)}
+.tile svg{flex:none;width:30px;height:30px;color:var(--tomd)}
+.tile.sel{outline:3px solid var(--tom);outline-offset:2px}
+.tile.gone{visibility:hidden}
+.tile:focus-visible,#robotBtn:focus-visible,.btn:focus-visible,.tabs a:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--mintd);outline-offset:2px}
+.ghost{position:fixed;z-index:9;pointer-events:none;transform:translate(-50%,-50%) rotate(-3deg);box-shadow:0 12px 30px rgb(0 0 0/.25);cursor:grabbing}
+.btn{min-height:44px;padding:10px 18px;border-radius:999px;border:0;background:var(--pine);color:#EEF3EF;font-weight:700;cursor:pointer}
+.btn.alt{background:transparent;border:1px solid var(--line);color:var(--ink)}
+.win{position:absolute;inset:0;border-radius:24px;background:color-mix(in srgb,var(--card) 94%,transparent);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:12px;text-align:center;padding:24px}
+.win[hidden]{display:none}.win h2{font-size:clamp(30px,5vw,44px)}.win p{margin:0;max-width:34ch}
+.row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+/* builder */
+.build{display:grid;gap:20px;grid-template-columns:minmax(0,1fr)}
+@media(min-width:900px){.build{grid-template-columns:minmax(0,6fr) minmax(0,5fr);align-items:start}.out{position:sticky;top:16px}}
+.build h2{font-size:clamp(26px,4vw,36px)}
+.presets{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 18px}
+.presets button{min-height:44px;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-weight:600;cursor:pointer}
+.presets button[aria-pressed=true]{background:var(--tom);border-color:var(--tom);color:#14201D}
+.field{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:10px}
+.field label{display:flex;gap:8px;align-items:center;font:700 17px Sora,sans-serif}
+.field small{display:block;color:var(--mut);margin:2px 0 8px}
+.field svg{width:22px;height:22px;color:var(--tomd);flex:none}
+textarea,select{width:100%;font:16px/1.45 Inter,sans-serif;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;resize:vertical}
+.out{background:var(--pine);color:#EEF3EF;border-radius:24px;padding:18px}
+.out h3{font-size:22px;margin-bottom:6px}.out p{margin:0 0 10px;color:#A9BDB6}
+.out pre{white-space:pre-wrap;font:14px/1.5 ui-monospace,Menlo,monospace;background:#0B1F1B;border-radius:14px;padding:14px;max-height:60vh;overflow:auto;margin:0 0 12px}
+.out .btn{background:var(--mint);color:var(--pine)}
+@media(max-width:600px){.top{padding:10px 14px}.brand{font-size:19px}.tabs a{padding:8px 12px;font-size:14px}.bench{position:sticky;top:0;z-index:2;padding:10px 12px;box-shadow:0 8px 20px rgb(0 0 0/.08)}#placed{display:none}.stats{font-size:14px}.stats b{font-size:20px}#robot{max-height:22vh}.tiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.tile{min-height:52px;padding:8px 10px;font-size:15px}.tile svg{width:22px;height:22px}.msg{min-height:60px;font-size:15px}.tray h2{font-size:22px}}
+.note{font-size:14px;color:var(--mut);margin-top:14px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">IA<span>...</span>yudame · Taller</div>
+  <nav class="tabs" aria-label="Partes del taller">
+    <a href="#armar" id="t-armar">1 · Arma al agente</a>
+    <a href="#disena" id="t-disena">2 · Diseña tu agente</a>
+  </nav>
+</header>
+<main>
+<section class="view" id="v-armar">
+  <div class="game">
+    <div class="bench">
+      <div class="stats"><span>Piezas <b id="cnt">0/7</b></span><span>Intrusos <b id="err">0</b></span><span>Tiempo <b id="tm">0:00</b></span></div>
+      <button id="robotBtn" aria-label="Robot: suelta o coloca aquí la pieza">
+      <svg id="robot" viewBox="0 0 320 360" role="img" aria-label="Robot por armar">
+        <ellipse cx="160" cy="346" rx="110" ry="10" fill="#000" opacity=".1"/>
+        <g id="p-objetivo"><rect x="156" y="14" width="8" height="40" rx="4" class="part"/><circle cx="160" cy="16" r="14" class="glow"/><circle cx="160" cy="16" r="6" fill="var(--bg)"/></g>
+        <g id="p-modelo"><path d="M100 78a60 40 0 0 1 120 0z" class="glow"/><path d="M130 66q10-16 22 0m14 0q12-16 24 0" stroke="var(--pine)" stroke-width="5" fill="none" opacity=".5"/></g>
+        <rect x="90" y="76" width="140" height="92" rx="26" fill="var(--pine)"/>
+        <g id="p-contexto"><circle cx="130" cy="120" r="17" class="glow"/><circle cx="190" cy="120" r="17" class="glow"/><circle cx="134" cy="116" r="6" fill="var(--pine)"/><circle cx="194" cy="116" r="6" fill="var(--pine)"/></g>
+        <rect x="140" y="148" width="40" height="6" rx="3" fill="var(--bg)" opacity=".6"/>
+        <g id="p-memoria"><rect x="70" y="100" width="22" height="44" rx="8" class="part"/><rect x="228" y="100" width="22" height="44" rx="8" class="part"/></g>
+        <rect x="148" y="168" width="24" height="14" fill="var(--pine)"/>
+        <rect x="80" y="180" width="160" height="112" rx="28" fill="var(--pine)"/>
+        <g id="p-instrucciones"><rect x="108" y="198" width="104" height="64" rx="12" class="glow"/><rect x="122" y="212" width="60" height="7" rx="3" fill="var(--pine)" opacity=".6"/><rect x="122" y="226" width="76" height="7" rx="3" fill="var(--pine)" opacity=".6"/><rect x="122" y="240" width="44" height="7" rx="3" fill="var(--pine)" opacity=".6"/></g>
+        <g id="p-herramientas"><rect x="34" y="190" width="40" height="84" rx="18" class="part"/><rect x="246" y="190" width="40" height="84" rx="18" class="part"/><path d="M28 282h52v10H28zM54 276v32" stroke="var(--pine)" stroke-width="8" stroke-linecap="round"/><circle cx="266" cy="290" r="16" fill="none" stroke="var(--pine)" stroke-width="8"/></g>
+        <g id="p-reglas"><rect x="104" y="292" width="40" height="40" rx="10" class="part"/><rect x="176" y="292" width="40" height="40" rx="10" class="part"/><path d="M160 270l-14 6v8c0 8 6 13 14 16 8-3 14-8 14-16v-8z" class="glow"/></g>
+      </svg>
+      </button>
+      <div class="msg" id="msg" aria-live="polite">Arrastra una pieza al robot. En celular también puedes tocar la pieza y luego tocar al robot.</div>
+      <div class="placed" id="placed"></div>
+      <div class="win" id="win" hidden>
+        <h2>¡Agente armado!</h2>
+        <p id="winTxt"></p>
+        <div class="row"><button class="btn" id="again">Jugar otra vez</button><a class="btn alt" href="#disena" style="text-decoration:none;display:flex;align-items:center">Diseña el tuyo →</a></div>
+      </div>
+    </div>
+    <div class="tray">
+      <h2>¿Qué piezas forman un agente?</h2>
+      <p>Hay 7 piezas reales y 5 intrusos. Lee bien antes de soltar.</p>
+      <div class="tiles" id="tiles"></div>
+    </div>
+  </div>
+</section>
+
+<section class="view" id="v-disena" hidden>
+  <div class="build">
+    <div>
+      <h2>Diseña tu agente</h2>
+      <p style="margin:6px 0 0;color:var(--mut)">Elige una tarea repetitiva de tu trabajo y llena cada pieza. Empieza con un ejemplo o en blanco.</p>
+      <div class="presets" id="presets"></div>
+      <form id="form" autocomplete="off"></form>
+    </div>
+    <aside class="out" aria-labelledby="outT">
+      <h3 id="outT">Tu agente, listo para copiar</h3>
+      <p>Pégalo en el asistente que ya uses (ChatGPT, Claude, Gemini, Copilot) y adjunta tus archivos.</p>
+      <pre id="prompt"></pre>
+      <button class="btn" id="copy" type="button">Copiar instrucciones</button>
+      <span id="copied" aria-live="polite" style="margin-left:10px"></span>
+    </aside>
+  </div>
+  <p class="note">Nada de lo que escribas aquí se envía a ningún lado: se queda en tu navegador.</p>
+</section>
+</main>
+
+<script>
+{
+const ICON={
+ modelo:'<path d="M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5 3 3 0 0 0 6 1V5a3 3 0 0 0-3-1zm6 0a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5 3 3 0 0 1-6 1"/>',
+ objetivo:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+ instrucciones:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6v3H9zM8 11h8M8 15h6"/>',
+ contexto:'<path d="M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2zM4 21V5M8 7h6"/>',
+ herramientas:'<path d="M14 6a4 4 0 0 0 5 5l-8 8a2 2 0 0 1-3-3l8-8a4 4 0 0 0-2-2z"/>',
+ memoria:'<rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/>',
+ reglas:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
+ x:'<circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16v1"/>'};
+const svg=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k]||ICON.x}</svg>`;
+const PIEZAS=[
+ {id:'modelo',t:'Modelo (el cerebro)',ok:1,m:'¡Sí! El modelo (ChatGPT, Claude, Gemini…) es el cerebro: entiende, razona y decide el siguiente paso.'},
+ {id:'objetivo',t:'Objetivo',ok:1,m:'¡Sí! Sin una meta clara el agente no sabe qué hacer ni cuándo terminó.'},
+ {id:'instrucciones',t:'Instrucciones y rol',ok:1,m:'¡Sí! Quién es, cómo debe trabajar y en qué formato te entrega el resultado.'},
+ {id:'contexto',t:'Contexto (tu información)',ok:1,m:'¡Sí! Tus documentos, datos y ejemplos. Sin contexto, el agente adivina.'},
+ {id:'herramientas',t:'Herramientas',ok:1,m:'¡Sí! Sus manos: buscar, leer archivos, usar tus apps. Es lo que le permite actuar, no solo platicar.'},
+ {id:'memoria',t:'Memoria',ok:1,m:'¡Sí! Recuerda lo que ya hizo en la tarea y lo que aprendió de ti.'},
+ {id:'reglas',t:'Reglas y límites',ok:1,m:'¡Sí! Lo que NO debe hacer y cuándo debe pedirte permiso. Tú sigues al mando.'},
+ {id:'programar',t:'Saber programar',ok:0,m:'¡Intruso! Hoy puedes armar un agente escribiendo en español, sin código.'},
+ {id:'cuerpo',t:'Un cuerpo de robot',ok:0,m:'¡Intruso! Un agente es software: vive en tu navegador o en la nube. Este robot es solo un dibujo 😉'},
+ {id:'banco',t:'Tu contraseña del banco',ok:0,m:'¡Intruso! Nunca compartas contraseñas. Dale solo los permisos mínimos que necesita.'},
+ {id:'super',t:'Una computadora de la NASA',ok:0,m:'¡Intruso! El modelo corre en la nube; te basta un navegador o tu celular.'},
+ {id:'mente',t:'Leer tu mente',ok:0,m:'¡Intruso! Si no le das contexto e instrucciones, no lo sabe.'}];
+const $=s=>document.querySelector(s);
+const tilesEl=$('#tiles'),robotBtn=$('#robotBtn'),robot=$('#robot'),msg=$('#msg');
+let placed=new Set(),errs=0,start=null,timer=null,selected=null;
+const fmt=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function reset(){
+  placed=new Set();errs=0;start=null;clearInterval(timer);selected=null;
+  document.querySelectorAll('#robot g[id^=p-]').forEach(g=>g.classList.remove('on'));
+  $('#cnt').textContent='0/7';$('#err').textContent='0';$('#tm').textContent='0:00';$('#placed').innerHTML='';
+  $('#win').hidden=true;robotBtn.classList.remove('armed');
+  msg.className='msg';msg.textContent='Arrastra una pieza al robot. En celular también puedes tocar la pieza y luego tocar al robot.';
+  tilesEl.innerHTML=shuffle(PIEZAS.slice()).map(p=>`<button class="tile" type="button" data-id="${p.id}">${svg(p.ok?p.id:'x').replace('aria-hidden','data-i aria-hidden')}<span>${p.t}</span></button>`).join('');
+  // the icon would give the answer away: show a neutral icon on every tile
+  tilesEl.querySelectorAll('svg').forEach(s=>s.innerHTML='<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M9 9h6M9 13h6M9 17h3"/>');
+}
+function tick(){$('#tm').textContent=fmt(Math.round((Date.now()-start)/1000))}
+function drop(id){
+  const p=PIEZAS.find(x=>x.id===id);const tile=tilesEl.querySelector(`[data-id="${id}"]`);
+  if(!p||!tile||tile.classList.contains('gone'))return;
+  if(!start){start=Date.now();timer=setInterval(tick,500)}
+  tile.classList.add('gone');tile.disabled=true;selected=null;robotBtn.classList.remove('armed');
+  const chip=document.createElement('span');chip.className='chip'+(p.ok?'':' x');chip.textContent=p.t;$('#placed').appendChild(chip);
+  msg.textContent=p.m;msg.className='msg '+(p.ok?'ok':'no');
+  robot.classList.remove('shake','pop');void robot.getBoundingClientRect();
+  if(p.ok){placed.add(id);document.getElementById('p-'+id).classList.add('on');robot.classList.add('pop');$('#cnt').textContent=placed.size+'/7'}
+  else{errs++;robot.classList.add('shake');$('#err').textContent=errs}
+  if(placed.size===7){clearInterval(timer);tick();const s=Math.round((Date.now()-start)/1000);
+    $('#winTxt').textContent=`Lo armaste en ${fmt(s)} y te cayeron ${errs} de 5 intrusos. Modelo + objetivo + instrucciones + contexto + herramientas + memoria + reglas = agente.`;
+    setTimeout(()=>{$('#win').hidden=false;$('#again').focus()},700)}
+}
+// pointer drag + tap-to-select
+let drag=null;
+tilesEl.addEventListener('pointerdown',e=>{
+  const t=e.target.closest('.tile');if(!t||t.disabled)return;
+  drag={t,x:e.clientX,y:e.clientY,ghost:null,id:t.dataset.id};t.setPointerCapture(e.pointerId)});
+tilesEl.addEventListener('pointermove',e=>{
+  if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+  if(!drag.ghost&&Math.hypot(dx,dy)>8){const g=drag.t.cloneNode(true);g.classList.add('ghost');g.style.width=drag.t.offsetWidth+'px';document.body.appendChild(g);drag.ghost=g;drag.t.style.opacity=.35}
+  if(drag.ghost){drag.ghost.style.left=e.clientX+'px';drag.ghost.style.top=e.clientY+'px';robotBtn.classList.toggle('hot',over(e))}});
+function over(e){const r=robotBtn.getBoundingClientRect();return e.clientX>r.left&&e.clientX<r.right&&e.clientY>r.top&&e.clientY<r.bottom}
+function endDrag(e,cancel){
+  if(!drag)return;const d=drag;drag=null;robotBtn.classList.remove('hot');d.t.style.opacity='';
+  if(d.ghost){d.ghost.remove();if(!cancel&&over(e))drop(d.id);return}
+  if(cancel)return;
+  tilesEl.querySelectorAll('.sel').forEach(x=>x.classList.remove('sel'));
+  if(selected===d.id){selected=null;robotBtn.classList.remove('armed');return}
+  selected=d.id;d.t.classList.add('sel');robotBtn.classList.add('armed');
+  msg.className='msg';msg.textContent='Ahora toca al robot para colocar «'+d.t.textContent.trim()+'».'}
+tilesEl.addEventListener('pointerup',e=>endDrag(e,false));
+tilesEl.addEventListener('pointercancel',e=>endDrag(e,true));
+tilesEl.addEventListener('keydown',e=>{const t=e.target.closest('.tile');if(t&&(e.key==='Enter'||e.key===' ')){e.preventDefault();drop(t.dataset.id)}});
+robotBtn.addEventListener('click',()=>{if(selected)drop(selected);else{msg.className='msg';msg.textContent='Primero elige una pieza de la lista.'}});
+$('#again').addEventListener('click',reset);
+
+// builder
+const CAMPOS=[
+ ['modelo','Modelo (el cerebro)','¿Qué asistente usarás? El que ya tengas sirve.'],
+ ['objetivo','Objetivo','¿Qué tarea concreta debe terminar? ¿Cómo sabes que terminó?'],
+ ['instrucciones','Instrucciones y rol','¿Quién es? ¿Cómo trabaja? ¿En qué formato te entrega?'],
+ ['contexto','Contexto (tu información)','¿Qué documentos, datos o ejemplos le darás?'],
+ ['herramientas','Herramientas','¿Qué puede usar? Buscar en web, leer archivos, hoja de cálculo, tus apps…'],
+ ['memoria','Memoria','¿Qué debe recordar entre pasos o entre una vez y otra?'],
+ ['reglas','Reglas y límites','¿Qué NO debe hacer? ¿Cuándo debe preguntarte antes?']];
+const EJ={
+ 'Contabilidad':{modelo:'El asistente que uso en el trabajo',objetivo:'Conciliar los movimientos del estado de cuenta del mes con las facturas (CFDI) y listar lo que no cuadra.',instrucciones:'Actúa como auxiliar contable. Entrega una tabla con fecha, monto, factura relacionada y estado: cuadra / no cuadra / falta factura.',contexto:'Estado de cuenta en CSV, facturas del mes en XML o PDF y el catálogo de cuentas.',herramientas:'Leer los archivos adjuntos, hoja de cálculo y calculadora.',memoria:'Proveedores frecuentes y cómo se clasificaron el mes pasado.',reglas:'No inventes montos. Si algo no cuadra, márcalo, no lo corrijas. Nada se registra ni se envía sin mi revisión.'},
+ 'Hardware':{modelo:'El asistente que uso en el trabajo',objetivo:'Revisar la lista de materiales (BOM) y señalar componentes obsoletos, sin inventario o sin segunda fuente.',instrucciones:'Actúa como ingeniero de componentes. Entrega una tabla por número de parte con riesgo alto/medio/bajo y una alternativa sugerida.',contexto:'BOM en Excel, hojas de datos y la lista de proveedores aprobados.',herramientas:'Búsqueda web en distribuidores y lectura de hojas de datos en PDF.',memoria:'Partes que ya aprobamos o rechazamos antes.',reglas:'Solo alternativas compatibles pin a pin y con la hoja de datos citada. El cambio final lo aprueba un ingeniero.'},
+ 'Marketing':{modelo:'El asistente que uso en el trabajo',objetivo:'Preparar el calendario de publicaciones del próximo mes para redes sociales.',instrucciones:'Actúa como estratega de contenido. Entrega una tabla: fecha, red social, idea, texto y llamado a la acción.',contexto:'Guía de marca, productos del mes, fechas clave de la temporada y resultados del mes pasado.',herramientas:'Búsqueda web de tendencias, hoja de cálculo y generador de imágenes.',memoria:'El tono de la marca y las publicaciones que mejor funcionaron.',reglas:'Nada de precios ni promociones sin aprobación. No publiques nada: todo pasa por mi revisión.'},
+ 'Firmware':{modelo:'El agente de código que usa mi equipo',objetivo:'Cuando un build falla las pruebas, encontrar qué cambio del PR es el sospechoso más probable.',instrucciones:'Actúa como ingeniero de integración. Entrega: prueba que falla, commits o archivos relacionados, nivel de confianza y por qué.',contexto:'El diff del PR, los logs de las pruebas y el historial de builds anteriores.',herramientas:'Leer el repositorio (git), descargar logs del CI y correr scripts de análisis.',memoria:'Pruebas inestables conocidas y fallas pasadas con su causa.',reglas:'Solo lectura: no hace merge ni revierte nada. Si la confianza es baja, lo dice. Un humano confirma.'},
+ 'En blanco':{}};
+const form=$('#form');
+form.innerHTML=CAMPOS.map(([k,t,h])=>`<div class="field"><label for="f-${k}">${svg(k)}${t}</label><small>${h}</small><textarea id="f-${k}" rows="2"></textarea></div>`).join('');
+$('#presets').innerHTML=Object.keys(EJ).map(n=>`<button type="button" aria-pressed="false" data-n="${n}">${n}</button>`).join('');
+const val=k=>$('#f-'+k).value.trim();
+function render(){
+  const L=[];
+  L.push('Quiero que trabajes como mi agente para esta tarea.');
+  if(val('instrucciones'))L.push('\nROL E INSTRUCCIONES\n'+val('instrucciones'));
+  if(val('objetivo'))L.push('\nOBJETIVO\n'+val('objetivo'));
+  if(val('contexto'))L.push('\nCONTEXTO\n'+val('contexto')+'\n(Te comparto esta información en archivos adjuntos o abajo.)');
+  if(val('herramientas'))L.push('\nHERRAMIENTAS QUE PUEDES USAR\n'+val('herramientas'));
+  if(val('memoria'))L.push('\nRECUERDA\n'+val('memoria'));
+  if(val('reglas'))L.push('\nREGLAS Y LÍMITES\n'+val('reglas'));
+  L.push('\nCÓMO TRABAJAR\n1. Antes de empezar, dime tu plan en 3 a 5 pasos.\n2. Si te falta información, pregúntame en lugar de suponer.\n3. Al terminar, dime qué tan seguro estás y qué debo revisar yo.');
+  $('#prompt').textContent=L.join('\n');
+  try{localStorage.setItem('iayudame',JSON.stringify(Object.fromEntries(CAMPOS.map(([k])=>[k,val(k)]))))}catch(e){}
+}
+function fill(o){CAMPOS.forEach(([k])=>$('#f-'+k).value=o[k]||'');render()}
+$('#presets').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+  document.querySelectorAll('#presets button').forEach(x=>x.setAttribute('aria-pressed',x===b));fill(EJ[b.dataset.n])});
+form.addEventListener('input',render);
+form.addEventListener('submit',e=>e.preventDefault());
+$('#copy').addEventListener('click',async()=>{
+  const txt=$('#prompt').textContent;
+  try{await navigator.clipboard.writeText(txt);$('#copied').textContent='¡Copiado!'}
+  catch(e){const r=document.createRange();r.selectNodeContents($('#prompt'));const s=getSelection();s.removeAllRanges();s.addRange(r);$('#copied').textContent='Texto seleccionado: cópialo con tu teclado o menú.'}
+  setTimeout(()=>$('#copied').textContent='',4000)});
+let saved=null;try{saved=JSON.parse(localStorage.getItem('iayudame')||'null')}catch(e){}
+if(saved&&Object.values(saved).some(Boolean))fill(saved);else{document.querySelector('#presets [data-n="Contabilidad"]').setAttribute('aria-pressed','true');fill(EJ['Contabilidad'])}
+
+// routing
+function route(){const v=location.hash==='#disena'?'disena':'armar';
+  $('#v-armar').hidden=v!=='armar';$('#v-disena').hidden=v!=='disena';
+  $('#t-armar').toggleAttribute('aria-current',v==='armar');$('#t-disena').toggleAttribute('aria-current',v==='disena');
+  if(v==='armar')$('#t-armar').setAttribute('aria-current','page');else $('#t-disena').setAttribute('aria-current','page')}
+addEventListener('hashchange',route);route();reset();
+}
+</script>
+</body>
+</html>
