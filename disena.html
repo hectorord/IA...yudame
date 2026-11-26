@@ -83,6 +83,10 @@ textarea,select{width:100%;font:16px/1.45 Inter,sans-serif;color:var(--ink);back
 .out pre{white-space:pre-wrap;font:14px/1.5 ui-monospace,Menlo,monospace;background:#0B1F1B;border-radius:14px;padding:14px;max-height:60vh;overflow:auto;margin:0 0 12px}
 .out .btn{background:var(--mint);color:var(--pine)}
 @media(max-width:600px){.top{padding:10px 14px}.brand{font-size:19px}.tabs a{padding:8px 12px;font-size:14px}.bench{position:sticky;top:0;z-index:2;padding:10px 12px;box-shadow:0 8px 20px rgb(0 0 0/.08)}#placed{display:none}.stats{font-size:14px}.stats b{font-size:20px}#robot{max-height:22vh}.tiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.tile{min-height:52px;padding:8px 10px;font-size:15px}.tile svg{width:22px;height:22px}.msg{min-height:60px;font-size:15px}.tray h2{font-size:22px}}
+.paste{margin-top:24px;background:var(--card);border:1px solid var(--line);border-radius:24px;padding:clamp(18px,3vw,28px)}
+.paste h2{font-size:clamp(24px,3.5vw,30px);margin-bottom:12px}
+.psteps{margin:0;padding-left:22px;display:grid;gap:12px;max-width:72ch}
+.psteps b{font-family:Sora,Inter,sans-serif}
 .note{font-size:14px;color:var(--mut);margin-top:14px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -108,6 +112,15 @@ textarea,select{width:100%;font:16px/1.45 Inter,sans-serif;color:var(--ink);back
       <span id="copied" aria-live="polite" style="margin-left:10px"></span>
     </aside>
   </div>
+  <section class="paste" aria-labelledby="pasteT">
+    <h2 id="pasteT">¿Y ahora dónde lo pego?</h2>
+    <ol class="psteps">
+      <li><b>Guárdalo para reusarlo.</b> Abre el asistente que ya usas y busca dónde se guardan instrucciones fijas (según el asistente se llaman proyectos, Gems o GPTs). Pega ahí tus instrucciones. Si no encuentras esa opción, pégalas al inicio de un chat nuevo.</li>
+      <li><b>Conecta solo lo necesario.</b> Si tu agente necesita tu correo o tus archivos, conéctalos desde la configuración del asistente. Te pedirá un permiso: acéptalo solo si es tu cuenta y lo que pide tiene sentido. Nunca escribas tu contraseña en el chat.</li>
+      <li><b>Haz que corra solo.</b> Algunos asistentes permiten programar tareas (por ejemplo, “todos los días a las 8 am”), a veces solo en planes de pago. Si el tuyo no puede, abre el chat cada mañana y escribe “hazlo”.</li>
+      <li><b>Revisa y ajusta.</b> Los primeros días lee lo que entrega y corrige las instrucciones. Así se vuelve cada vez mejor.</li>
+    </ol>
+  </section>
   <p class="note">Nada de lo que escribas aquí se envía a ningún lado: se queda en tu navegador.</p>
 </section>
 </main>
@@ -135,10 +148,11 @@ const CAMPOS=[
  ['memoria','Memoria','¿Qué debe recordar entre pasos o entre una vez y otra?'],
  ['reglas','Reglas y límites','¿Qué NO debe hacer? ¿Cuándo debe preguntarte antes?']];
 const EJ={
- 'Contabilidad':{modelo:'El asistente que uso en el trabajo',objetivo:'Conciliar los movimientos del estado de cuenta del mes con las facturas (CFDI) y listar lo que no cuadra.',instrucciones:'Actúa como auxiliar contable. Entrega una tabla con fecha, monto, factura relacionada y estado: cuadra / no cuadra / falta factura.',contexto:'Estado de cuenta en CSV, facturas del mes en XML o PDF y el catálogo de cuentas.',herramientas:'Leer los archivos adjuntos, hoja de cálculo y calculadora.',memoria:'Proveedores frecuentes y cómo se clasificaron el mes pasado.',reglas:'No inventes montos. Si algo no cuadra, márcalo, no lo corrijas. Nada se registra ni se envía sin mi revisión.'},
- 'Hardware':{modelo:'El asistente que uso en el trabajo',objetivo:'Revisar la lista de materiales (BOM) y señalar componentes obsoletos, sin inventario o sin segunda fuente.',instrucciones:'Actúa como ingeniero de componentes. Entrega una tabla por número de parte con riesgo alto/medio/bajo y una alternativa sugerida.',contexto:'BOM en Excel, hojas de datos y la lista de proveedores aprobados.',herramientas:'Búsqueda web en distribuidores y lectura de hojas de datos en PDF.',memoria:'Partes que ya aprobamos o rechazamos antes.',reglas:'Solo alternativas compatibles pin a pin y con la hoja de datos citada. El cambio final lo aprueba un ingeniero.'},
- 'Marketing':{modelo:'El asistente que uso en el trabajo',objetivo:'Preparar el calendario de publicaciones del próximo mes para redes sociales.',instrucciones:'Actúa como estratega de contenido. Entrega una tabla: fecha, red social, idea, texto y llamado a la acción.',contexto:'Guía de marca, productos del mes, fechas clave de la temporada y resultados del mes pasado.',herramientas:'Búsqueda web de tendencias, hoja de cálculo y generador de imágenes.',memoria:'El tono de la marca y las publicaciones que mejor funcionaron.',reglas:'Nada de precios ni promociones sin aprobación. No publiques nada: todo pasa por mi revisión.'},
- 'Build Watchdog':{modelo:'El agente de código que usa nuestro equipo',objetivo:'Al abrir un PR, avisar si el build falla y señalar qué cambio es el sospechoso más probable.',instrucciones:'Actúa como ingeniero de integración. Deja un comentario en el PR con: prueba que falla, commit sospechoso, nivel de confianza y por qué.',contexto:'Los cambios del PR, las bitácoras de las pruebas y el historial de builds anteriores.',herramientas:'Leer el repositorio, descargar bitácoras del CI y comentar en el PR.',memoria:'Pruebas inestables conocidas y fallas pasadas con su causa.',reglas:'Solo lectura: no hace merge ni revierte nada. Si la confianza es baja, lo dice. El equipo confirma.'},
+ 'Resumen de correos':{modelo:'El asistente que ya usas (Gemini, ChatGPT, Claude, Copilot…)',objetivo:'Cada mañana, darme un resumen de mis correos de trabajo de las últimas 24 horas para saber qué atender primero.',instrucciones:'Actúa como mi asistente personal. Agrupa los correos en tres partes: urgente, espera mi respuesta e informativo. Máximo 10 líneas, una por correo, con quién lo manda y qué tengo que hacer. Si un correo menciona una reunión o una fecha límite, revisa mi calendario y avísame si hay un conflicto.',contexto:'Mis correos de trabajo de las últimas 24 horas. Mi puesto es [tu puesto] y mis proyectos principales son [proyecto 1] y [proyecto 2].',herramientas:'Acceso de solo lectura a mi correo y a mi calendario.',memoria:'Qué personas y proyectos son prioridad para mí, y qué tipo de correos te pedí ignorar.',reglas:'Solo leer: no respondas, no borres y no reenvíes nada. Si no estás seguro de que algo sea importante, márcalo para que yo lo revise.'},
+ 'Contabilidad':{modelo:'El asistente que uso en el trabajo',objetivo:'Conciliar los movimientos del estado de cuenta del mes con las facturas (CFDI) y listar lo que no cuadra.',instrucciones:'Actúa como auxiliar contable. Entrega una tabla con fecha, monto, factura relacionada y estado: cuadra / no cuadra / falta factura. Si un movimiento no coincide exacto, investiga si es un pago parcial o si cubre varias facturas, y explica por qué crees que corresponden.',contexto:'Estado de cuenta en CSV, facturas del mes en XML o PDF y el catálogo de cuentas.',herramientas:'Leer los archivos adjuntos, hoja de cálculo y calculadora.',memoria:'Proveedores frecuentes y cómo se clasificaron el mes pasado.',reglas:'No inventes montos. Si algo no cuadra, márcalo, no lo corrijas. Nada se registra ni se envía sin mi revisión.'},
+ 'Hardware':{modelo:'El asistente que uso en el trabajo',objetivo:'Revisar la lista de materiales (BOM) y señalar componentes obsoletos, sin inventario o sin segunda fuente.',instrucciones:'Actúa como ingeniero de componentes. Para cada parte en riesgo, busca en distribuidores y compara hojas de datos antes de sugerir una alternativa. Entrega una tabla por número de parte con riesgo alto/medio/bajo y la alternativa sugerida.',contexto:'BOM en Excel, hojas de datos y la lista de proveedores aprobados.',herramientas:'Búsqueda web en distribuidores y lectura de hojas de datos en PDF.',memoria:'Partes que ya aprobamos o rechazamos antes.',reglas:'Solo alternativas compatibles pin a pin y con la hoja de datos citada. El cambio final lo aprueba un ingeniero.'},
+ 'Marketing':{modelo:'El asistente que uso en el trabajo',objetivo:'Preparar el calendario de publicaciones del próximo mes para redes sociales.',instrucciones:'Actúa como estratega de contenido. Antes de proponer, revisa qué publicaciones funcionaron el mes pasado y busca tendencias de la semana; con eso decide qué tipo de contenido repetir y cuál probar. Entrega una tabla: fecha, red social, idea, texto y llamado a la acción.',contexto:'Guía de marca, productos del mes, fechas clave de la temporada y resultados del mes pasado.',herramientas:'Búsqueda web de tendencias, hoja de cálculo y generador de imágenes.',memoria:'El tono de la marca y las publicaciones que mejor funcionaron.',reglas:'Nada de precios ni promociones sin aprobación. No publiques nada: todo pasa por mi revisión.'},
+ 'Build Watchdog':{modelo:'El agente de código que usa nuestro equipo',objetivo:'Cuando se actualiza el código y una prueba falla, encontrar qué cambio es la causa más probable.',instrucciones:'Actúa como ingeniero de integración. Genera un reporte para el desarrollador con: la prueba que falla, el cambio sospechoso y la evidencia que los relaciona.',contexto:'Los cambios en el código, los reportes de las pruebas y el historial de fallas anteriores.',herramientas:'Leer el código y los reportes de pruebas que genera la automatización.',memoria:'Pruebas inestables conocidas y fallas pasadas con su causa.',reglas:'Solo lectura: no cambia ni revierte nada. Si no hay evidencia clara, lo dice. El equipo confirma.'},
  'En blanco':{}};
 const form=$('#form');
 form.innerHTML=CAMPOS.map(([k,t,h])=>`<div class="field"><label for="f-${k}">${svg(k)}${t}</label><small>${h}</small><textarea id="f-${k}" rows="2"></textarea></div>`).join('');
@@ -153,7 +167,7 @@ function render(){
   if(val('herramientas'))L.push('\nHERRAMIENTAS QUE PUEDES USAR\n'+val('herramientas'));
   if(val('memoria'))L.push('\nRECUERDA\n'+val('memoria'));
   if(val('reglas'))L.push('\nREGLAS Y LÍMITES\n'+val('reglas'));
-  L.push('\nCÓMO TRABAJAR\n1. Antes de empezar, dime tu plan en 3 a 5 pasos.\n2. Si te falta información, pregúntame en lugar de suponer.\n3. Al terminar, dime qué tan seguro estás y qué debo revisar yo.');
+  L.push('\nCÓMO TRABAJAR\n1. Antes de empezar, dime tu plan en 3 a 5 pasos.\n2. Si te falta información, pregúntame en lugar de suponer; si trabajas solo (por ejemplo, en una tarea programada), márcalo en tu respuesta.\n3. Al terminar, muéstrame la evidencia de tus conclusiones y qué debo revisar yo.');
   $('#prompt').textContent=L.join('\n');
   try{localStorage.setItem('iayudame',JSON.stringify(Object.fromEntries(CAMPOS.map(([k])=>[k,val(k)]))))}catch(e){}
 }
@@ -168,8 +182,12 @@ $('#copy').addEventListener('click',async()=>{
   try{await navigator.clipboard.writeText(txt);$('#copied').textContent='¡Copiado!'}
   catch(e){const r=document.createRange();r.selectNodeContents($('#prompt'));const s=getSelection();s.removeAllRanges();s.addRange(r);$('#copied').textContent='Texto seleccionado: cópialo con tu teclado o menú.'}
   setTimeout(()=>$('#copied').textContent='',4000)});
+const SLUG={correo:'Resumen de correos',contabilidad:'Contabilidad',hardware:'Hardware',marketing:'Marketing',watchdog:'Build Watchdog',blanco:'En blanco'};
+function pick(n){document.querySelectorAll('#presets button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.n===n));fill(EJ[n])}
+const fromHash=SLUG[location.hash.slice(1)];
 let saved=null;try{saved=JSON.parse(localStorage.getItem('iayudame')||'null')}catch(e){}
-if(saved&&Object.values(saved).some(Boolean))fill(saved);else{document.querySelector('#presets [data-n="Contabilidad"]').setAttribute('aria-pressed','true');fill(EJ['Contabilidad'])}
+if(fromHash)pick(fromHash);else if(saved&&Object.values(saved).some(Boolean))fill(saved);else pick('Contabilidad');
+addEventListener('hashchange',()=>{const n=SLUG[location.hash.slice(1)];if(n)pick(n)});
 
 
 }
